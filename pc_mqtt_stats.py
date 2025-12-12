@@ -6,37 +6,38 @@ import paho.mqtt.client as mqtt
 MQTT_BROKER = "localhost"   # set to broker IP if using remote broker
 MQTT_PORT = 1883
 TOPIC = "pc/stats"
-INTERVAL = 2.0  # seconds
+INTERVAL = 1.0  # seconds
 
 def get_stats():
     cpu = psutil.cpu_percent(interval=None)
     mem = psutil.virtual_memory()
-    disk = psutil.disk_usage('/')
     uptime = int(time.time() - psutil.boot_time())
-    hostname = socket.gethostname()
-    system = platform.system() + " " + platform.release()
     return {
-        "host": hostname,
-        "system": system,
-        "cpu_percent": round(cpu,1),
-        "mem_total": mem.total,
-        "mem_used": mem.used,
-        "mem_percent": round(mem.percent,1),
-        "disk_total": disk.total,
-        "disk_used": disk.used,
-        "disk_percent": round(disk.percent,1),
+        "timestamp": int(time.time()),
+        "cpu_percent": cpu,
+        "mem_percent": mem.percent,
         "uptime": uptime
     }
 
+def on_publish(client, userdata, mid, reason_codes, properties):
+    pass  # Optional: print("Message published, mid=", mid)
+
 def main():
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "pc-stats-publisher")
-    client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    client = mqtt.Client(client_id="pc-stats-publisher", callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+    client.on_publish = on_publish
+    rc = client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    if rc != 0:
+        print(f"MQTT connect failed, rc={rc}")
+        return
+    print("MQTT connected")
     client.loop_start()
     try:
         while True:
+            client.loop()
             stats = get_stats()
             payload = json.dumps(stats)
             client.publish(TOPIC, payload, qos=0, retain=False)
+            print("Published:", payload)
             time.sleep(INTERVAL)
     except KeyboardInterrupt:
         client.loop_stop()
