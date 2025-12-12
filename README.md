@@ -31,7 +31,7 @@ This project consists of a Python script running on a PC that collects system st
 1. Install Python dependencies:
 
    ```bash
-   git clone https://github.com/mojahdi2021/PC_Status_In_LCD.git
+   git clone https://github.com/mojahid2021/PC-Status-In-LCD.git
    cd pc_mqtt_stats
    ```
 
