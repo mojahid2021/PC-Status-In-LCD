@@ -1,4 +1,21 @@
 
+"""
+PC Stats MQTT Publisher
+
+This script collects real-time system statistics (CPU usage, memory usage, uptime)
+from the PC and publishes them as JSON via MQTT to the topic "pc/stats".
+
+Requirements:
+- paho-mqtt
+- psutil
+- Mosquitto MQTT broker running on localhost:1883
+
+Usage:
+    python3 pc_mqtt_stats.py
+
+The script runs indefinitely, publishing stats every 1 second.
+"""
+
 import time, json, socket, platform
 import psutil
 import paho.mqtt.client as mqtt

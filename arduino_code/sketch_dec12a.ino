@@ -3,19 +3,18 @@
 
 #include <WiFi.h>
 #include <Wire.h>
-#include <hd44780.h>
-#include <hd44780ioClass/hd44780_I2Cexp.h>
+#include <LiquidCrystal_I2C.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-const char* WIFI_SSID = "IDK 🤷‍♂️";
-const char* WIFI_PASS = "password";
+const char* WIFI_SSID = "IDK 🤷‍♂️";  // Replace with your actual WiFi name
+const char* WIFI_PASS = "password";  // Replace with your actual WiFi password
 const char* MQTT_SERVER = "192.168.0.249"; // PC LAN IP (not localhost)
 const uint16_t MQTT_PORT = 1883;
 
 const int I2C_SDA = 8;
 const int I2C_SCL = 9;
-hd44780_I2Cexp lcd;
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -23,6 +22,7 @@ PubSubClient client(espClient);
 float cpu_pct = 0.0;
 float mem_pct = 0.0;
 unsigned long lastMsg = 0;
+int uptime_sec = 0;
 
 void showLCDLine(const char* a, const char* b) {
   lcd.clear();
@@ -51,6 +51,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int len) {
   }
   cpu_pct = doc["cpu_percent"] | 0.0;
   mem_pct = doc["mem_percent"] | 0.0;
+  uptime_sec = doc["uptime"] | 0;
   lastMsg = millis();
   Serial.printf("Parsed CPU=%.1f MEM=%.1f\n", cpu_pct, mem_pct);
 }
@@ -91,12 +92,7 @@ void mqttConnect() {
 void setup() {
   Serial.begin(115200);
   Wire.begin(I2C_SDA, I2C_SCL);
-
-  // Initialize LCD
-  int status = lcd.begin(16, 2);
-  if (status) {
-    hd44780::fatalError(status);
-  }
+  lcd.init();
   lcd.backlight();
   lcd.clear();
 
@@ -166,8 +162,13 @@ void loop() {
     if (millis() - lastDisplay > 1000) {
       lastDisplay = millis();
       char b0[17], b1[17];
-      snprintf(b0, sizeof(b0), "CPU: %5.1f %%", cpu_pct);
-      snprintf(b1, sizeof(b1), "RAM: %5.1f %%", mem_pct);
+      // Line 0: CPU and RAM
+      snprintf(b0, sizeof(b0), "CPU:%d RAM:%d", (int)cpu_pct, (int)mem_pct);
+      // Line 1: Uptime
+      int hours = uptime_sec / 3600;
+      int minutes = (uptime_sec % 3600) / 60;
+      int seconds = uptime_sec % 60;
+      snprintf(b1, sizeof(b1), "Up: %02d:%02d:%02d", hours, minutes, seconds);
       lcd.clear();
       lcd.setCursor(0,0); lcd.print(b0);
       lcd.setCursor(0,1); lcd.print(b1);
