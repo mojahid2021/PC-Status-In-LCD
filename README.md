@@ -1,4 +1,4 @@
-# PC Stats MQTT Monitor
+# PC Status In LCD via MQTT
 
 This project consists of a Python script running on a PC that collects system statistics (CPU usage, memory usage, uptime) and publishes them via MQTT. An ESP32 microcontroller subscribes to the MQTT topic and displays the data on an I2C LCD screen.
 
@@ -29,6 +29,16 @@ This project consists of a Python script running on a PC that collects system st
 ### PC Setup
 
 1. Install Python dependencies:
+
+   ```bash
+   git clone https://github.com/mojahdi2021/PC_Status_In_LCD.git
+   cd pc_mqtt_stats
+   ```
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
 
    ```bash
    pip install -r requirements.txt
