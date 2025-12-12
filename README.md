@@ -1,6 +1,6 @@
 # PC Status In LCD via MQTT
 
-<img src="assets/LCD-Display.jpg" alt="LCD Display" width="400"/>   
+<img src="assets/LCD-Display.png" alt="LCD Display" width="400"/>   
 
 This project consists of a Python script running on a PC that collects system statistics (CPU usage, memory usage, uptime) and publishes them via MQTT. An ESP32 microcontroller subscribes to the MQTT topic and displays the data on an I2C LCD screen.
 
