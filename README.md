@@ -92,9 +92,21 @@ This project consists of a Python script running on a PC that collects system st
    const char* MQTT_SERVER = "192.168.0.xxx";  // PC's IP
    ```
 
-5. Upload the code to ESP32-S3.
+## Hardware Connections
 
-## Running
+Connect the I2C LCD to the ESP32-S3 as follows:
+
+```
+ESP32-S3          I2C LCD (16x2)6
+---------         -------------
+GPIO 8 (SDA) --> SDA
+GPIO 9 (SCL) --> SCL
+GND            --> GND
+3.3V or 5V     --> VCC (check LCD specs)
+```
+
+- I2C Address: Typically 0x27 or 0x3F (scan with I2C scanner if unsure)
+- Ensure the LCD has a backlight jumper if needed
 
 1. Start the PC script:
 
