@@ -114,11 +114,75 @@ GND            --> GND
    python3 pc_mqtt_stats.py
    ```
 
-2. The ESP32 will automatically connect to WiFi and MQTT, then display:
-   - Line 1: CPU and RAM percentages (e.g., "CPU:15 RAM:68")
-   - Line 2: Uptime in HH:MM:SS (e.g., "Up: 01:23:45")
+## Running in Background
 
-## Troubleshooting
+### Option 1: Using systemd (Recommended)
+
+To run the PC script in the background and ensure it starts automatically on boot:
+
+1. Create a systemd service file:
+
+   ```bash
+   sudo nano /etc/systemd/system/pc-mqtt-stats.service
+   ```
+
+   Add the following content (replace `/path/to/your/project` with the actual path):
+
+   ```ini
+   [Unit]
+   Description=PC MQTT Stats Publisher
+   After=network.target mosquitto.service
+
+   [Service]
+   Type=simple
+   User=your_username
+   WorkingDirectory=/path/to/your/project
+   ExecStart=/path/to/your/project/venv/bin/python3 /path/to/your/project/pc_mqtt_stats.py
+   Restart=always
+   RestartSec=5
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+2. Reload systemd and enable/start the service:
+
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable pc-mqtt-stats.service
+   sudo systemctl start pc-mqtt-stats.service
+   ```
+
+3. Check status:
+
+   ```bash
+   sudo systemctl status pc-mqtt-stats.service
+   ```
+
+4. To stop the service:
+
+   ```bash
+   sudo systemctl stop pc-mqtt-stats.service
+   ```
+
+5. To disable auto-start on boot:
+
+   ```bash
+   sudo systemctl disable pc-mqtt-stats.service
+   ```
+
+The script will now run in the background and restart automatically if it crashes. Since the service is enabled, it will start automatically after system restart.
+
+### Option 2: Using nohup
+
+For a simple background run without auto-start on boot:
+
+```bash
+source venv/bin/activate
+nohup python3 pc_mqtt_stats.py &
+```
+
+This runs the script in the background, immune to terminal hangups. However, it won't restart on crashes or system reboot. Use `pkill -f pc_mqtt_stats.py` to stop it.
 
 - **ESP32 not displaying data**: Check Serial Monitor for connection errors. Ensure WiFi credentials and MQTT IP are correct.
 - **MQTT connection fails**: Verify Mosquitto is running and ESP32 is on the same network.
